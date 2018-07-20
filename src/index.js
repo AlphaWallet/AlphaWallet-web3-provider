@@ -1,65 +1,50 @@
-const debug = require('debug')('TrustWeb3Provider'),
-      eachSeries = require('async/eachSeries'),
-      HookedWalletSubprovider = require('web3-provider-engine/subproviders/hooked-wallet.js'),
-      map = require('async/map'),
-      Provider = require('./provider'),
-      Web3 = require('web3')
+const Web3 = require('web3')
+const ProviderEngine = require('web3-provider-engine')
+const HookedWalletSubprovider = require('web3-provider-engine/subproviders/hooked-wallet.js')
+const FilterSubprovider = require('web3-provider-engine/subproviders/filters.js')
+const Web3Subprovider = require("web3-provider-engine/subproviders/provider.js")
+const CacheSubprovider = require('web3-provider-engine/subproviders/cache.js')
+const SubscriptionsSubprovider = require('web3-provider-engine/subproviders/subscriptions.js')
 
-let context
-if (typeof window === 'undefined') {
-  context = global
-} else {
-  context = window
-}
+const context = window || global
 
 context.chrome = { webstore: true }
+context.Web3 = Web3
 
-class TrustWeb3Provider {
-  constructor (options) {
-    const { rpcUrl, bypassHooks,  noConflict } = options
+let callbacks = {}
+let hookedSubProvider
+let globalSyncOptions = {}
 
-    this.options = options
-    this.isTrust = true
-    this._providers = []
-    this.callbacks = {}
+const Neuron = {
+  init (rpcUrl, options, syncOptions) { 
+    const engine = new ProviderEngine()
+    const web3 = new Web3(engine)
+    context.web3 = web3
+    globalSyncOptions = syncOptions
 
-    if (!bypassHooks) {
-      this.addProvider(new HookedWalletSubprovider(options))
-    }
+    engine.addProvider(new CacheSubprovider())
+    engine.addProvider(new SubscriptionsSubprovider())
+    engine.addProvider(new FilterSubprovider())
+    engine.addProvider(hookedSubProvider = new HookedWalletSubprovider(options))
+    engine.addProvider(new Web3Subprovider(new Web3.providers.HttpProvider(rpcUrl)))
+    engine.on('error', err => console.error(err.stack))
+    engine.isNeuron = true
+    engine.start()
 
-    if (options.wssUrl) {
-      this.addProvider(new Provider(this.websocketProvider = new Web3.providers.WebsocketProvider(options.wssUrl)))
-      this.addDefaultEvents = this.websocketProvider.addDefaultEvents.bind(this.websocketProvider)
-      this.removeListener = this.websocketProvider.removeListener.bind(this.websocketProvider)
-      this.removeAllListeners = this.websocketProvider.removeAllListeners.bind(this.websocketProvider)
-      this.reset = this.websocketProvider.reset.bind(this.websocketProvider)
-    } else {
-      this.addProvider(new Provider(new Web3.providers.HttpProvider(rpcUrl)))
-    }
-
-    if (!noConflict) {
-      const web3 = new Web3(this)
-      context.Web3 = Web3
-      web3.sha3 = web3.utils.sha3
-      context.web3 = web3
-    }
-  }
-
-  addProvider (source) {
-    this._providers.push(source)
-    source.setEngine(this)
-  }
-
+    return engine
+  },
   addCallback (id, cb, isRPC) {
     cb.isRPC = isRPC
-    this.callbacks[id] = cb
-  }
-
+    callbacks[id] = cb
+  },
   executeCallback (id, error, value) {
-    debug(`executing callback: \nid: ${id}\nvalue: ${value}\nerror: ${error}\n`)
-    let callback = this.callbacks[id]
+    console.log(`executing callback: \nid: ${id}\nvalue: ${value}\nerror: ${error}\n`)
+
+    let callback = callbacks[id]
+
     if (callback.isRPC) {
         const response = {'id': id, jsonrpc: '2.0', result: value, error: {message: error} }
+
       if (error) {
         callback(response, null)
       } else {
@@ -68,124 +53,68 @@ class TrustWeb3Provider {
     } else {
       callback(error, value)
     }
-    delete this.callbacks[id]
+    delete callbacks[id]
   }
-
-  sendAsync (payload, callback) {
-    const { bypassHooks } = this.options
-
-    if (!bypassHooks) {
-      switch (payload.method) {
-        case 'eth_accounts': {
-          const { address } = this.options,
-                { id, jsonrpc } = payload
-
-          callback(null, { id, jsonrpc, result: [address] })
-          break
-        }
-        case 'eth_coinbase': {
-          const { address: result } = this.options,
-                { id, jsonrpc } = payload
-
-          callback(null, { id, jsonrpc, result })
-          break
-        }
-        case 'net_version': {
-          const { networkVersion: result } = this.options,
-                { id, jsonrpc } = payload
-
-          callback(null, { id, jsonrpc, result })
-          break
-        }
-        case 'net_listening': {
-          const { id, jsonrpc } = payload
-          callback(null, { id, jsonrpc, result: true })
-          break
-        }
-        default: {
-          this.mapToHandler(payload, callback)
-          break
-        }
-      }
-    } else {
-      this.mapToHandler(payload, callback)
-    }
-  }
-
-  send (payload, callback) {
-    this.sendAsync(payload, callback)
-  }
-
-  mapToHandler (payload, callback) {
-    if (!callback) {
-      throw new Error('Trust web3 provider does not support synchronous requests.')
-    } else {
-      if (Array.isArray(payload)) {
-        // handle batch
-        map(payload, this._handleAsync.bind(this), callback)
-      } else {
-        // handle single
-        this._handleAsync(payload, callback)
-      }
-    }
-  }
-
-  _handleAsync (payload, finished) {
-    const self = this
-    let currentProvider = -1,
-        stack = []
-
-    next()
-
-    function next (after) {
-      currentProvider += 1
-
-      stack.unshift(after)
-
-      // bubbled down as far as we could go, and the request wasn't
-      // handled return an error
-      if (currentProvider >= self._providers.length) {
-        end(new Error(`Request for method '${payload.method}' not handled by any Subprovider. Please check your subprovider configuration to ensure this method is handled.`))
-      } else {
-        try {
-          const provider = self._providers[currentProvider]
-          provider.handleRequest(payload, next, end)
-        } catch (e) {
-          end(e)
-        }
-      }
-    }
-
-    function end (error, result) {
-      eachSeries(stack, function (fn, callback) {
-        if (fn) {
-          fn(error, result, callback)
-        } else {
-          callback()
-        }
-      }, function () {
-        const { id, jsonrpc } = payload
-
-        if (error) {
-          finished(error, { error, message: error.stack || error.message || error, id, jsonrpc, code: -32000 })
-        } else {
-          finished(null, { id, jsonrpc, result })
-        }
-      })
-    }
-  }
-
-  on (type, callback) {
-    if (this.websocketProvider) {
-      this.websocketProvider.on(type, callback)
-    }
-  }
-
-  isConnected() { return true }
 }
 
-if (typeof context.Trust === 'undefined') {
-  context.Trust = TrustWeb3Provider
+if (typeof context.Neuron === 'undefined') {
+  context.Neuron = Neuron
 }
 
-module.exports = TrustWeb3Provider
+ProviderEngine.prototype.send = function (payload) {
+  const self = this
+
+  let result = null
+  switch (payload.method) {
+
+    case 'eth_accounts':
+      let address = globalSyncOptions.address
+      result = address ? [address] : []
+      break
+
+    case 'eth_coinbase':
+      result = globalSyncOptions.address || null
+      break
+
+    case 'eth_uninstallFilter':
+      self.sendAsync(payload, noop)
+      result = true
+      break
+
+    case 'net_version':
+      result = globalSyncOptions.networkVersion || null
+      break
+
+    case 'net_listening':
+      try {
+        self._providers.filter(p => p.provider !== undefined)[0].provider.send(payload)
+        result = true
+      } catch (e) {
+        result = false
+      }
+      break
+
+    // throw not-supported Error
+    default:
+      var message = `The Neuron Web3 object does not support synchronous methods like ${payload.method} without a callback parameter.`
+      throw new Error(message)
+  }
+  // return the result
+  return {
+    id: payload.id,
+    jsonrpc: payload.jsonrpc,
+    result: result,
+  }
+}
+
+ProviderEngine.prototype.isConnected = function () {
+    return this.send({
+        id: 9999999999,
+        jsonrpc: '2.0',
+        method: 'net_listening',
+        params: []
+    }).result
+}
+
+module.exports = Neuron
+
