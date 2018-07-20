@@ -5,10 +5,8 @@
 node_modules/
 jspm_packages/
 staging/
+*.swp
+*.swo
 
-# Fastlane
-fastlane/report.xml
-
-
-# Log Files
 *.log
+*.lock
