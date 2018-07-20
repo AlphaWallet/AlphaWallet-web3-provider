@@ -54098,6 +54098,11 @@ if (typeof context.Neuron === 'undefined') {
   context.Neuron = Neuron;
 }
 
+ProviderEngine.prototype.setHost = function (host) {
+  var length = this._providers.length;
+  this._providers[length - 1].provider.host = host;
+};
+
 ProviderEngine.prototype.send = function (payload) {
   var self = this;
 
