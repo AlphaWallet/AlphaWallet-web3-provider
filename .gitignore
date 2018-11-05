@@ -10,3 +10,5 @@ staging/
 
 *.log
 *.lock
+
+.idea

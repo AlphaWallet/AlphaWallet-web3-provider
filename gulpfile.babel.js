@@ -8,7 +8,7 @@ const gulp            = require('gulp'),
       size            = require('gulp-size'),
       source          = require('vinyl-source-stream'),
       config = {
-          name: 'neuron',
+          name: 'AlphaWallet',
           fileTypes: {
             all: '**/*',
             js: '**/*.js',
@@ -57,7 +57,7 @@ gulp.task('bundle:javascript', ['javascript', ], function () {
   .pipe(buffer())
   .pipe(minify({
     mangle: {
-      reserved: [ 'NeuronWeb3Provider' ]
+      reserved: [ 'AlphaWalletWeb3Provider' ]
     }
   }))
   .pipe(size())
