@@ -1,5 +1,5 @@
 {
-  "name": "nervos-web3-provider",
+  "name": "AlphaWalletWeb3Provider",
   "version": "0.0.5",
   "description": "web3 injection",
   "main": "index.js",
