@@ -15,7 +15,7 @@ let callbacks = {}
 let hookedSubProvider
 let globalSyncOptions = {}
 
-const Neuron = {
+const AlphaWallet = {
   init (rpcUrl, options, syncOptions) { 
     const engine = new ProviderEngine()
     const web3 = new Web3(engine)
@@ -57,8 +57,8 @@ const Neuron = {
   }
 }
 
-if (typeof context.Neuron === 'undefined') {
-  context.Neuron = Neuron
+if (typeof context.AlphaWallet === 'undefined') {
+  context.AlphaWallet = AlphaWallet
 }
 
 ProviderEngine.prototype.setHost = function (host) {
@@ -101,7 +101,7 @@ ProviderEngine.prototype.send = function (payload) {
 
     // throw not-supported Error
     default:
-      var message = `The Neuron Web3 object does not support synchronous methods like ${payload.method} without a callback parameter.`
+      var message = `The AlphaWallet Web3 object does not support synchronous methods like ${payload.method} without a callback parameter.`
       throw new Error(message)
   }
   // return the result
@@ -121,5 +121,5 @@ ProviderEngine.prototype.isConnected = function () {
     }).result
 }
 
-module.exports = Neuron
+module.exports = AlphaWallet
 

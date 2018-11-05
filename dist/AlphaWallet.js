@@ -57421,7 +57421,7 @@ var callbacks = {};
 var hookedSubProvider = void 0;
 var globalSyncOptions = {};
 
-var Neuron = {
+var AlphaWallet = {
   init: function init(rpcUrl, options, syncOptions) {
     var engine = new ProviderEngine();
     var web3 = new Web3(engine);
@@ -57465,8 +57465,8 @@ var Neuron = {
   }
 };
 
-if (typeof context.Neuron === 'undefined') {
-  context.Neuron = Neuron;
+if (typeof context.AlphaWallet === 'undefined') {
+  context.AlphaWallet = AlphaWallet;
 }
 
 ProviderEngine.prototype.setHost = function (host) {
@@ -57511,7 +57511,7 @@ ProviderEngine.prototype.send = function (payload) {
 
     // throw not-supported Error
     default:
-      var message = 'The Neuron Web3 object does not support synchronous methods like ' + payload.method + ' without a callback parameter.';
+      var message = 'The AlphaWallet Web3 object does not support synchronous methods like ' + payload.method + ' without a callback parameter.';
       throw new Error(message);
   }
   // return the result
@@ -57531,7 +57531,7 @@ ProviderEngine.prototype.isConnected = function () {
   }).result;
 };
 
-module.exports = Neuron;
+module.exports = AlphaWallet;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"web3":313,"web3-provider-engine":299,"web3-provider-engine/subproviders/cache.js":300,"web3-provider-engine/subproviders/filters.js":301,"web3-provider-engine/subproviders/hooked-wallet.js":302,"web3-provider-engine/subproviders/provider.js":303,"web3-provider-engine/subproviders/subscriptions.js":305}]},{},[370]);

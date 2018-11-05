@@ -2,7 +2,7 @@
 
 ## How to Identify AlphaWallet Provider
 
-If neuron provider injected properly `isAlphaWallet` will be `true`
+If AlphaWallet provider injected properly `isAlphaWallet` will be `true`
 
 ```javascript
  web3.currentProvider.isAlphaWallet
