@@ -7,7 +7,7 @@
 #
 
 Pod::Spec.new do |s|
-  s.name             = 'TrustWeb3Provider'
+  s.name             = 'AlphaWalletWeb3Provider'
   s.version          = '0.3.0'
   s.summary          = 'Web3 javascript wrapper provider for iOS and Android platforms.'
 
