@@ -19,7 +19,7 @@
     "ethereum-dapps",
     "dapps"
   ],
-  "author": "AlphaWallet <contract@cryptape.com>",
+  "author": "AlphaWallet",
   "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/cryptape/AlphaWallet-Android/issues"
@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "babel-core": "^6.26.0",
-    "web3": "^0.20.6",
+    "web3": "0.20.6",
     "web3-provider-engine": "https://github.com/cryptape/provider-engine#nervos"
   }
 }
