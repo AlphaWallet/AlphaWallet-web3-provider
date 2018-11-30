@@ -28,7 +28,7 @@ const AlphaWallet = {
     engine.addProvider(hookedSubProvider = new HookedWalletSubprovider(options))
     engine.addProvider(new Web3Subprovider(new Web3.providers.HttpProvider(rpcUrl)))
     engine.on('error', err => console.error(err.stack))
-    engine.isNeuron = true
+    engine.isAlphaWallet = true
     engine.start()
 
     return engine
