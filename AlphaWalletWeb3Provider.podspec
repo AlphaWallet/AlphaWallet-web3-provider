@@ -20,7 +20,7 @@ Pod::Spec.new do |s|
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'hewigovens' => 'hewigovens@gmail.com', 'Viktor Radchenko' => 'vikmeup' }
   s.source           = { :git => 'https://github.com/AlphaWallet/AlphaWalletWeb3Provider.git', :tag => s.version.to_s }
-  s.social_media_url = 'https://twitter.com/Alpha_Wallet'
+  s.social_media_url = 'https://twitter.com/AlphaWallet'
   s.ios.deployment_target = '8.0'
 
   s.resource_bundles = {
