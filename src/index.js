@@ -16,7 +16,7 @@ let hookedSubProvider
 let globalSyncOptions = {}
 
 const AlphaWallet = {
-  init (rpcUrl, options, syncOptions) { 
+  init (rpcUrl, options, syncOptions) {
     const engine = new ProviderEngine()
     const web3 = new Web3(engine)
     context.web3 = web3
@@ -80,6 +80,10 @@ ProviderEngine.prototype.send = function (payload) {
 
     case 'eth_coinbase':
       result = globalSyncOptions.address || null
+      break
+
+    case 'eth_chainId':
+      result = globalSyncOptions.networkVersion || null
       break
 
     case 'eth_uninstallFilter':
