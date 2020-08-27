@@ -44297,6 +44297,20 @@ HookedWalletSubprovider.prototype.handleRequest = function(payload, next, end){
       ], end)
       return
 
+    case 'eth_signTypedData_v3':
+      // process normally
+      address = payload.params[0]
+      message = payload.params[1]
+      extraParams = payload.params[2] || {}
+      msgParams = extend(extraParams, {
+        from: address,
+        data: message,
+      })
+      waterfall([
+        (cb) => self.processTypedMessage(msgParams, cb),
+      ], end)
+      return
+
     case 'parity_postTransaction':
       txParams = payload.params[0]
       self.parityPostTransaction(txParams, end)
