@@ -54932,6 +54932,23 @@ ProviderEngine.prototype.isConnected = function () {
   }).result;
 };
 
+ProviderEngine.prototype.sendAsyncOriginal = ProviderEngine.prototype.sendAsync;
+ProviderEngine.prototype.sendAsync = function (payload, cb) {
+  module.exports = AlphaWallet;
+  switch (payload.method) {
+    case 'net_version':
+      var result = {
+        id: payload.id,
+        jsonrpc: payload.jsonrpc,
+        result: globalSyncOptions.networkVersion || null
+      };
+      cb(null, result);
+      break;
+    default:
+      this.sendAsyncOriginal(payload, cb);
+  }
+};
+
 module.exports = AlphaWallet;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
