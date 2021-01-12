@@ -46,6 +46,6 @@
   "dependencies": {
     "babel-core": "^6.26.0",
     "web3": "0.20.6",
-    "web3-provider-engine": "https://github.com/cryptape/provider-engine#nervos"
+    "web3-provider-engine": "https://github.com/AlphaWallet/provider-engine#alphawallet"
   }
 }
