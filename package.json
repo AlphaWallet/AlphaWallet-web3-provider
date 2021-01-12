@@ -35,17 +35,17 @@
     "eslint": "^5.0.1",
     "eslint-plugin-mocha": "^5.0.0",
     "eslint-plugin-node": "^6.0.1",
-    "gulp": "^3.9.1",
-    "gulp-minify": "^2.1.0",
+    "gulp": "^4.0.2",
+    "gulp-minify": "^3.1.0",
     "gulp-rename": "^1.2.2",
     "gulp-size": "^3.0.0",
-    "run-sequence": "^2.2.1",
+    "undertaker": "^1.2.1",
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0"
   },
   "dependencies": {
     "babel-core": "^6.26.0",
     "web3": "0.20.6",
-    "web3-provider-engine": "https://github.com/cryptape/provider-engine#nervos"
+    "web3-provider-engine": "https://github.com/AlphaWallet/provider-engine#alphawallet"
   }
 }
