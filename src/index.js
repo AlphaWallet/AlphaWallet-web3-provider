@@ -26,7 +26,25 @@ const AlphaWallet = {
     engine.addProvider(new SubscriptionsSubprovider())
     engine.addProvider(new FilterSubprovider())
     engine.addProvider(hookedSubProvider = new HookedWalletSubprovider(options))
-    engine.addProvider(new Web3Subprovider(new Web3.providers.HttpProvider(rpcUrl)))
+
+    let username, password;
+    let start = rpcUrl.indexOf("://");
+    if (start != -1) {
+      start += 3;
+      const end = rpcUrl.indexOf("@", start + 1);
+      if (end != -1) {
+          const credentials = rpcUrl.substring(start, end);
+          let [u, p] = credentials.split(":");
+          username = u;
+          password = p;
+      }
+    }
+    if (typeof username === 'undefined' || typeof password === 'undefined') {
+      engine.addProvider(new Web3Subprovider(new Web3.providers.HttpProvider(rpcUrl)))
+    } else {
+      engine.addProvider(new Web3Subprovider(new Web3.providers.HttpProvider(rpcUrl,0,username,password)))
+    }
+
     engine.on('error', err => console.error(err.stack))
     engine.enable = options.enable
     engine.isAlphaWallet = true

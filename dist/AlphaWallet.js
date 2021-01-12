@@ -56560,6 +56560,8 @@ function extend() {
 (function (global){
 'use strict';
 
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 var Web3 = require('web3');
 var ProviderEngine = require('web3-provider-engine');
 var HookedWalletSubprovider = require('web3-provider-engine/subproviders/hooked-wallet.js');
@@ -56588,7 +56590,31 @@ var AlphaWallet = {
     engine.addProvider(new SubscriptionsSubprovider());
     engine.addProvider(new FilterSubprovider());
     engine.addProvider(hookedSubProvider = new HookedWalletSubprovider(options));
-    engine.addProvider(new Web3Subprovider(new Web3.providers.HttpProvider(rpcUrl)));
+
+    var username = void 0,
+        password = void 0;
+    var start = rpcUrl.indexOf("://");
+    if (start != -1) {
+      start += 3;
+      var end = rpcUrl.indexOf("@", start + 1);
+      if (end != -1) {
+        var credentials = rpcUrl.substring(start, end);
+
+        var _credentials$split = credentials.split(":"),
+            _credentials$split2 = _slicedToArray(_credentials$split, 2),
+            u = _credentials$split2[0],
+            p = _credentials$split2[1];
+
+        username = u;
+        password = p;
+      }
+    }
+    if (typeof username === 'undefined' || typeof password === 'undefined') {
+      engine.addProvider(new Web3Subprovider(new Web3.providers.HttpProvider(rpcUrl)));
+    } else {
+      engine.addProvider(new Web3Subprovider(new Web3.providers.HttpProvider(rpcUrl, 0, username, password)));
+    }
+
     engine.on('error', function (err) {
       return console.error(err.stack);
     });
