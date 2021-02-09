@@ -141,7 +141,7 @@ ProviderEngine.prototype.isConnected = function () {
 }
 
 ProviderEngine.prototype.sendAsyncOriginal = ProviderEngine.prototype.sendAsync
-ProviderEngine.prototype.sendAsync = function (payload, cb) {module.exports = AlphaWallet
+ProviderEngine.prototype.sendAsync = function (payload, cb) {
   switch (payload.method) {
     case 'net_version':
       var result = {
