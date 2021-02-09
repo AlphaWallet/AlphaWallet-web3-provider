@@ -151,10 +151,37 @@ ProviderEngine.prototype.sendAsync = function (payload, cb) {
       };
       cb(null, result);
       break;
+    case 'eth_requestAccounts':
+      var result = {
+        id: payload.id,
+        jsonrpc: payload.jsonrpc,
+        result: [globalSyncOptions.address]
+      };
+      cb(null, result);
+      break;
+    case 'eth_chainId':
+      var result = {
+        id: payload.id,
+        jsonrpc: payload.jsonrpc,
+        result: "0x" + globalSyncOptions.networkVersion.toString(16) || null
+      };
+      cb(null, result);
+      break;
     default:
       this.sendAsyncOriginal(payload, cb)
   }
 };
 
-module.exports = AlphaWallet
+ProviderEngine.prototype.request = function (payload) {
+  return new Promise((resolve, reject) => {
+    this.sendAsync(payload, function(error, response) {
+      if (error) {
+        reject(error)
+      } else {
+        resolve(response.result)
+      }
+    })
+  })
+}
 
+module.exports = AlphaWallet
