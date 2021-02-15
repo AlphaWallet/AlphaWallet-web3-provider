@@ -141,7 +141,7 @@ ProviderEngine.prototype.isConnected = function () {
 }
 
 ProviderEngine.prototype.sendAsyncOriginal = ProviderEngine.prototype.sendAsync
-ProviderEngine.prototype.sendAsync = function (payload, cb) {module.exports = AlphaWallet
+ProviderEngine.prototype.sendAsync = function (payload, cb) {
   switch (payload.method) {
     case 'net_version':
       var result = {
@@ -151,10 +151,37 @@ ProviderEngine.prototype.sendAsync = function (payload, cb) {module.exports = Al
       };
       cb(null, result);
       break;
+    case 'eth_requestAccounts':
+      var result = {
+        id: payload.id,
+        jsonrpc: payload.jsonrpc,
+        result: [globalSyncOptions.address]
+      };
+      cb(null, result);
+      break;
+    case 'eth_chainId':
+      var result = {
+        id: payload.id,
+        jsonrpc: payload.jsonrpc,
+        result: "0x" + globalSyncOptions.networkVersion.toString(16) || null
+      };
+      cb(null, result);
+      break;
     default:
       this.sendAsyncOriginal(payload, cb)
   }
 };
 
-module.exports = AlphaWallet
+ProviderEngine.prototype.request = function (payload) {
+  return new Promise((resolve, reject) => {
+    this.sendAsync(payload, function(error, response) {
+      if (error) {
+        reject(error)
+      } else {
+        resolve(response.result)
+      }
+    })
+  })
+}
 
+module.exports = AlphaWallet
