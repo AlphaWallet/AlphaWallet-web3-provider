@@ -168,7 +168,14 @@ ProviderEngine.prototype.sendAsync = function (payload, cb) {
       cb(null, result);
       break;
     default:
-      this.sendAsyncOriginal(payload, cb)
+      //Patch the payload so nodes accept it, to prevent error: "invalid json request"
+      if (payload.id) {
+        this.sendAsyncOriginal(payload, cb);
+      } else {
+        var payload2 = payload
+        payload2['id'] = 1
+        this.sendAsyncOriginal(payload2, cb);
+      }
   }
 };
 
