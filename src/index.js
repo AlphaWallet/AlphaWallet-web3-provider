@@ -163,7 +163,7 @@ ProviderEngine.prototype.sendAsync = function (payload, cb) {
       var result = {
         id: payload.id,
         jsonrpc: payload.jsonrpc,
-        result: "0x" + globalSyncOptions.networkVersion.toString(16) || null
+        result: "0x" + parseInt(globalSyncOptions.networkVersion).toString(16) || null
       };
       cb(null, result);
       break;
