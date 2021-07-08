@@ -47,6 +47,7 @@ const AlphaWallet = {
 
     engine.on('error', err => console.error(err.stack))
     engine.enable = options.enable
+    engine.chainId = syncOptions.networkVersion
     engine.isAlphaWallet = true
     engine.start()
 
