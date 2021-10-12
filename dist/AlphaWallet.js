@@ -62591,6 +62591,8 @@ function HookedWalletSubprovider(opts){
   if (opts.ethCall) self.ethCall = opts.ethCall
   // EIP3085 
   if (opts.walletAddEthereumChain) self.walletAddEthereumChain = opts.walletAddEthereumChain
+  // EIP3326
+  if (opts.walletSwitchEthereumChain) self.walletSwitchEthereumChain = opts.walletSwitchEthereumChain
 }
 
 HookedWalletSubprovider.prototype.handleRequest = function(payload, next, end){
@@ -62635,6 +62637,14 @@ HookedWalletSubprovider.prototype.handleRequest = function(payload, next, end){
       txParams.chainType = "ETH"
       waterfall([
         (cb) => self.walletAddEthereumChain(txParams, cb),
+      ], end)
+      return
+
+    case 'wallet_switchEthereumChain':
+      txParams = payload.params[0]
+      txParams.chainType = "ETH"
+      waterfall([
+        (cb) => self.walletSwitchEthereumChain(txParams, cb),
       ], end)
       return
 
