@@ -49,6 +49,7 @@ const AlphaWallet = {
     engine.enable = options.enable
     engine.chainId = syncOptions.networkVersion
     engine.isAlphaWallet = true
+	engine.net_version = function(){ return globalSyncOptions.networkVersion || null; } // hack to expose window.ethereum.net_version() as expected by dapps
     engine.start()
 
     return engine
