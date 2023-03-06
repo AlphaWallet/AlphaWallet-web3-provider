@@ -39974,7 +39974,12 @@ var AlphaWallet = {
     var callback = callbacks[id];
 
     if (callback.isRPC) {
-      var response = { 'id': id, jsonrpc: '2.0', result: value, error: { message: error } };
+      var response;
+      if (obj instanceof Object && !(obj instanceof Array)) {
+        response = { 'id': id, jsonrpc: '2.0', result: value, error: error };
+      } else {
+        response = { 'id': id, jsonrpc: '2.0', result: value, error: { message: error } };
+      }
 
       if (error) {
         callback(response, null);
