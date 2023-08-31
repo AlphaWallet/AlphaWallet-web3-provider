@@ -1,0 +1,110 @@
+diff --git a/node_modules/web3-provider-engine/subproviders/hooked-wallet.js b/node_modules/web3-provider-engine/subproviders/hooked-wallet.js
+index d9208ce..a7b99f2 100644
+--- a/node_modules/web3-provider-engine/subproviders/hooked-wallet.js
++++ b/node_modules/web3-provider-engine/subproviders/hooked-wallet.js
+@@ -62,6 +62,8 @@ function HookedWalletSubprovider(opts){
+   if (opts.processMessage) self.processMessage = opts.processMessage
+   if (opts.processPersonalMessage) self.processPersonalMessage = opts.processPersonalMessage
+   if (opts.processTypedMessage) self.processTypedMessage = opts.processTypedMessage
++  if (opts.processTypedMessageV3) self.processTypedMessageV3 = opts.processTypedMessageV3
++  if (opts.processTypedMessageV4) self.processTypedMessageV4 = opts.processTypedMessageV4
+   // approval hooks
+   self.approveTransaction = opts.approveTransaction || self.autoApprove
+   self.approveMessage = opts.approveMessage || self.autoApprove
+@@ -72,6 +74,8 @@ function HookedWalletSubprovider(opts){
+   if (opts.signMessage) self.signMessage = opts.signMessage  || mustProvideInConstructor('signMessage')
+   if (opts.signPersonalMessage) self.signPersonalMessage = opts.signPersonalMessage  || mustProvideInConstructor('signPersonalMessage')
+   if (opts.signTypedMessage) self.signTypedMessage = opts.signTypedMessage  || mustProvideInConstructor('signTypedMessage')
++  if (opts.signTypedMessageV3) self.signTypedMessageV3 = opts.signTypedMessageV3  || mustProvideInConstructor('signTypedMessageV3')
++  if (opts.signTypedMessageV4) self.signTypedMessageV4 = opts.signTypedMessageV4  || mustProvideInConstructor('signTypedMessageV4')
+   if (opts.recoverPersonalSignature) self.recoverPersonalSignature = opts.recoverPersonalSignature
+   // publish to network
+   if (opts.publishTransaction) self.publishTransaction = opts.publishTransaction
+@@ -226,8 +230,6 @@ HookedWalletSubprovider.prototype.handleRequest = function(payload, next, end){
+       return
+ 
+     case 'eth_signTypedData':
+-    case 'eth_signTypedData_v3':
+-    case 'eth_signTypedData_v4':
+       return (function(){
+         // process normally
+ 
+@@ -252,6 +254,55 @@ HookedWalletSubprovider.prototype.handleRequest = function(payload, next, end){
+           (cb) => self.processTypedMessage(msgParams, cb),
+         ], end)
+       })()
++    case 'eth_signTypedData_v3':
++      return (function(){
++        // process normally
++
++        const first = payload.params[0]
++        const second = payload.params[1]
++
++        if (resemblesAddress(first)) {
++          address = first
++          message = second
++        } else {
++          message = first
++          address = second
++        }
++
++        extraParams = payload.params[2] || {}
++        msgParams = extend(extraParams, {
++          from: address,
++          data: message,
++        })
++        waterfall([
++          (cb) => self.validateTypedMessage(msgParams, cb),
++          (cb) => self.processTypedMessageV3(msgParams, cb),
++        ], end)
++      })()
++    case 'eth_signTypedData_v4':
++      return (function(){
++        // process normally
++
++        const first = payload.params[0]
++        const second = payload.params[1]
++
++        if (resemblesAddress(first)) {
++          address = first
++          message = second
++        } else {
++          message = first
++          address = second
++        }
++        extraParams = payload.params[2] || {}
++        msgParams = extend(extraParams, {
++          from: address,
++          data: message,
++        })
++        waterfall([
++          (cb) => self.validateTypedMessage(msgParams, cb),
++          (cb) => self.processTypedMessageV4(msgParams, cb),
++        ], end)
++      })()
+ 
+     case 'parity_postTransaction':
+       txParams = payload.params[0]
+@@ -429,6 +480,22 @@ HookedWalletSubprovider.prototype.processTypedMessage = function(msgParams, cb)
+     (cb) => self.signTypedMessage(msgParams, cb),
+   ], cb)
+ }
++HookedWalletSubprovider.prototype.processTypedMessageV3 = function(msgParams, cb) {
++  const self = this
++  waterfall([
++    (cb) => self.approveTypedMessage(msgParams, cb),
++    (didApprove, cb) => self.checkApproval('message', didApprove, cb),
++    (cb) => self.signTypedMessageV4(msgParams, cb),
++  ], cb)
++}
++HookedWalletSubprovider.prototype.processTypedMessageV4 = function(msgParams, cb) {
++  const self = this
++  waterfall([
++    (cb) => self.approveTypedMessage(msgParams, cb),
++    (didApprove, cb) => self.checkApproval('message', didApprove, cb),
++    (cb) => self.signTypedMessageV4(msgParams, cb),
++  ], cb)
++}
+ 
+ //
+ // approval
